@@ -3,69 +3,34 @@ import argparse
 import time
 import threading
 from logical_clock import LamportClock
-from utils import txt_to_object
+from utils import txt_to_object, broadcast, object_to_txt
 from priority_queue import PriorityQueue
-
-
-clients = []
-replies = []
-
-def receive(server, queue):
-    while True:
-        # Accept Connection
-        client, address = server.accept()
-        print("Connected with {}".format(str(address)))
-        clients.append(client)
-
-        # Start Handling Thread For Client
-        thread = threading.Thread(target=handle, args=(client, queue))
-        thread.start()
-
-        if len(clients) == 1:
-            break
-
-
-def handle(client, pqueue):
-    while True:
-        try:
-            # Broadcasting Messages
-            message = client.recv(1024).decode("utf-8")
-            message, serialized_lamport_clock = message.split("|")
-            lamport_clock = txt_to_object(serialized_lamport_clock)
-
-            if message == "REQUEST":
-                print(message)
-                # Add to local queue
-                client.send(bytes("REPLY|", "utf-8"))
-                pqueue.insert(lamport_clock)
-
-            elif message == "REPLY":
-                # wait for all replies
-                replies.append(client)
-
-            elif message == "RELEASE":
-                pqueue.delete(lamport_clock.proc_id)
-                
-        except:
-            # Removing And Closing Clients
-            clients.remove(client)
-            client.close()
-            break
-
+from blockchain import Block, BlockChain
+from balance_table import BalanceTable
+from banking_server import BankingServer
+from communication_factory import CommunicationFactory
 
 def run_server(args):
     host = 'localhost'  # Listen on the local machine only
     port = args.port  # Choose a port number
-    pqueue = PriorityQueue([])
     lamport_clock = LamportClock(args.client)
+    block_chain = BlockChain()
+    balance_table = BalanceTable()
+    pqueue = PriorityQueue([])
+    banking_server = BankingServer()
+    comm_factory = CommunicationFactory()
+    limit = 2
+
+
+    clients = []
+    replies = []
 
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect((host, 8001))
-    # clientsocket.send(bytes("Hello", "utf-8"))
     clients.append(clientsocket)
 
 
-    thread = threading.Thread(target=handle, args=(clientsocket, pqueue))
+    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket, pqueue, block_chain, balance_table, clients, replies))
     thread.start()
     
 
@@ -74,8 +39,23 @@ def run_server(args):
     server.bind((host, port))
     server.listen()
 
-    receive(server, pqueue)
+    comm_factory.receive(server, pqueue, block_chain, balance_table, clients, replies, limit)
 
+    while True:
+        replies.clear()
+
+        s = input("Transaction or Balance:\n")
+
+        if s == "t":
+            receiver = input("Transaction Receiver:\n")
+            amount = input("Transaction Amount:\n")
+            lamport_clock()
+            banking_server.transcation(lamport_clock, pqueue, balance_table, block_chain, receiver, float(amount), replies, clients)
+        elif s == "b":
+            balance = banking_server.balance_request(args.client, balance_table)
+            print("Current Balance is: {}".format(balance))
+        else:
+            continue
 
 
 

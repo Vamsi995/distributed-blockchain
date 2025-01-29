@@ -56,6 +56,19 @@ class PriorityQueue(Generic[T]):
             self.sift_down(smallest)
 
 
+    def extract_top(self) -> T:
+
+        if len(self.data) == 0:
+            return None
+        
+        self.data[0], self.data[-1] = self.data[-1], self.data[0]
+
+        out = self.data.pop()
+
+        self.sift_down(0)
+
+        return out
+
 # if __name__ == "__main__":
 
 #     queue = PriorityQueue([])

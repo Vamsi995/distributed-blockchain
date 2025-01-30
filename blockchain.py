@@ -19,6 +19,9 @@ class BlockChain:
         block.prev_hash = self.block_chain_tail.current_hash
         self.block_chain_tail = block
 
+    def __repr__(self):
+        return f"{self.block_chain_head}"
+
 class Block:
 
     def __init__(self, sender: str, receiver: str , amount: float, prev_hash: str, next: Block = None):
@@ -37,3 +40,6 @@ class Block:
                    str(self.amount).encode('utf-8') + 
                    str(self.prev_hash).encode('utf-8'))
         return sha.hexdigest()
+    
+    def __repr__(self):
+        return f"|Client<{self.sender}> pays Client<{self.receiver}> ${self.amount}| -> {self.next}"

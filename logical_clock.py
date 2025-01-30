@@ -6,6 +6,7 @@ class LamportClock:
     
     def __call__(self):
         self.logical_time += 1
+        print(f"Clock Value {self.logical_time - 1} -> {self.logical_time}")
 
     def __lt__(self, others):
         if self.logical_time == others.logical_time:

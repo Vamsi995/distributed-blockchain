@@ -14,7 +14,3 @@ def txt_to_object(txt):
     message_bytes = base64.b64decode(base64_bytes)
     obj = pickle.loads(message_bytes)
     return obj
-
-def broadcast(message, clients):
-    for client in clients:
-        client.send(bytes(message, "utf-8"))

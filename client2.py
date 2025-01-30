@@ -1,11 +1,9 @@
 import socket
 import argparse
-import time
 import threading
 from logical_clock import LamportClock
-from utils import txt_to_object, broadcast, object_to_txt
 from priority_queue import PriorityQueue
-from blockchain import Block, BlockChain
+from blockchain import BlockChain
 from balance_table import BalanceTable
 from banking_server import BankingServer
 from communication_factory import CommunicationFactory
@@ -22,15 +20,16 @@ def run_server(args):
     limit = 2
 
 
-    clients = []
-    replies = []
+    # clients = []
+    # replies = []
 
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect((host, 8001))
-    clients.append(clientsocket)
+    comm_factory.CLIENTS.append(clientsocket)
+    # clients.append(clientsocket)
+    print("Connected with {}".format(clientsocket.getpeername()))
 
-
-    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket, pqueue, block_chain, balance_table, clients, replies))
+    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket, pqueue, block_chain, balance_table, comm_factory))
     thread.start()
     
 
@@ -38,11 +37,12 @@ def run_server(args):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((host, port))
     server.listen()
+    print("Listening on port: {}".format(port))
 
-    comm_factory.receive(server, pqueue, block_chain, balance_table, clients, replies, limit)
+    comm_factory.receive(server, pqueue, block_chain, balance_table, limit)
 
     while True:
-        replies.clear()
+        comm_factory.REPLIES.clear()
 
         s = input("Transaction or Balance:\n")
 
@@ -54,6 +54,9 @@ def run_server(args):
         elif s == "b":
             balance = banking_server.balance_request(args.client, balance_table)
             print("Current Balance is: {}".format(balance))
+        elif s == "bl":
+            print("Current Block Chain Information is: ")
+            print(block_chain)
         else:
             continue
 

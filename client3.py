@@ -1,11 +1,9 @@
 import socket
 import argparse
-import time
 import threading
 from logical_clock import LamportClock
-from utils import txt_to_object, broadcast, object_to_txt
 from priority_queue import PriorityQueue
-from blockchain import Block, BlockChain
+from blockchain import BlockChain
 from balance_table import BalanceTable
 from banking_server import BankingServer
 from communication_factory import CommunicationFactory
@@ -22,27 +20,29 @@ def run_server(args):
     # limit = 1
 
 
-    clients = []
-    replies = []
+    # clients = []
+    # replies = []
 
     clientsocket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket1.connect((host, 8001))
+    comm_factory.CLIENTS.append(clientsocket1)
+    # clients.append(clientsocket1)
+    print("Connected with {}".format(clientsocket1.getpeername()))
 
-    clients.append(clientsocket1)
-
-    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket1, pqueue, block_chain, balance_table, clients, replies))
+    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket1, pqueue, block_chain, balance_table, comm_factory))
     thread.start()
 
     clientsocket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket2.connect((host, 8002))
+    comm_factory.CLIENTS.append(clientsocket2)
+    # clients.append(clientsocket2)
+    print("Connected with {}".format(clientsocket2.getpeername()))
 
-    clients.append(clientsocket2)
-
-    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket2, pqueue, block_chain, balance_table, clients, replies))
+    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket2, pqueue, block_chain, balance_table, comm_factory))
     thread.start()
 
     while True:
-        replies.clear()
+        comm_factory.REPLIES.clear()
 
         s = input("Transaction or Balance:\n")
 

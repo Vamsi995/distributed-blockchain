@@ -12,3 +12,10 @@ class BalanceTable:
     
     def __setitem__(self, index: int, value: float):
         self.balance_table[index] = value 
+
+    def __repr__(self):
+        return f"""
+                Client 1: ${self.balance_table[1]},
+                Client 2: ${self.balance_table[2]},
+                Client 3: ${self.balance_table[3]}
+               """

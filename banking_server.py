@@ -49,11 +49,10 @@ class BankingServer:
 
         except Exception as e:
             print(e)
-            broadcast("RELEASE", comm_factory.CLIENTS)
+            comm_factory.broadcast("RELEASE")
             raise Abort(e)
 
         
-
 
     def critical_section(self, lamport_clock, balance_table, block_chain, receiver, amount):
         if balance_table[lamport_clock.proc_id] < amount:

@@ -71,18 +71,3 @@ class PriorityQueue(Generic[T]):
         self.sift_down(0)
 
         return out
-
-# if __name__ == "__main__":
-
-#     queue = PriorityQueue([])
-#     a = LamportClock(1)
-#     a()
-#     a()
-#     b = LamportClock(2)
-#     b()
-#     b()
-
-#     queue.insert(a)
-#     queue.insert(b)
-
-#     print(queue.peek_top())

@@ -22,7 +22,7 @@ class CommunicationFactory:
         logging.info(f"[Event - Broadcast - {message_type}] - [Clock - {lamport_clock.logical_time}] - [Sent from Client {lamport_clock.proc_id}]")
 
 
-    def receive(self, server, pqueue: PriorityQueue, block_chain: BlockChain, balance_table: BalanceTable, client_limit, lamport_clock):
+    def receive(self, server, pqueue: PriorityQueue, block_chain: BlockChain, balance_table: BalanceTable, client_limit, lamport_clock, client_interface):
         while True:
             # Accept Connection
             client, address = server.accept()
@@ -30,14 +30,14 @@ class CommunicationFactory:
             self.CLIENTS.append(client)
 
             # Start Handling Thread For Client
-            thread = threading.Thread(target=self.handle, args=(client, pqueue, block_chain, balance_table, self, lamport_clock))
+            thread = threading.Thread(target=self.handle, args=(client, pqueue, block_chain, balance_table, self, lamport_clock, client_interface))
             thread.start()
 
             if len(self.CLIENTS) == client_limit:
                 break
 
 
-    def handle(self, client, pqueue: PriorityQueue, block_chain: BlockChain, balance_table: BalanceTable, comm_factory: CommunicationFactory, lamport_clock: LamportClock):
+    def handle(self, client, pqueue: PriorityQueue, block_chain: BlockChain, balance_table: BalanceTable, comm_factory: CommunicationFactory, lamport_clock: LamportClock, client_interface):
         while True:
             try:
                 # Broadcasting Messages
@@ -58,7 +58,6 @@ class CommunicationFactory:
                     logging.info(f"[Event - REPLY] - [Clock - {lamport_clock.logical_time}] - [Sent from Client {lamport_clock.proc_id}]")
 
 
-
                 elif message == "REPLY":
                     attached_clock = txt_to_object(piggy_back_obj)
                     comm_factory.REPLIES.append(client)
@@ -71,8 +70,7 @@ class CommunicationFactory:
                     lamport_clock.update_clock(attached_clock.logical_time)
                     pqueue.delete(attached_clock.proc_id)
                     logging.info(f"[Event - RELEASE] - [Clock - {lamport_clock.logical_time}] - [Received from Client {attached_clock.proc_id}]")
-
-
+                    client_interface.update_balance()
 
                 elif message == "BLOCK":
                     piggy_back_clock, piggy_back_block = piggy_back_obj.split("#")

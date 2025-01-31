@@ -4,6 +4,7 @@ from balance_table import BalanceTable
 from blockchain import Block, BlockChain
 from utils import object_to_txt
 from exceptions import Abort
+import time
 
 class BankingServer:
 
@@ -15,11 +16,15 @@ class BankingServer:
         # put yourself in the queue
         queue.insert(lamport_clock)
 
+        # Increment Lamport Timestamp
+        lamport_clock()
         # send request to all
-        comm_factory.broadcast("REQUEST" + "|" + object_to_txt(lamport_clock))
+        
+        comm_factory.broadcast("REQUEST" + "|" + object_to_txt(lamport_clock), lamport_clock, "REQUEST")
 
         while len(comm_factory.REPLIES) != 2:
             # print(f"Waiting for reply: {len(replies)}")
+            time.sleep(1)
             continue
         
         print("Received all replies: {}".format(len(comm_factory.REPLIES)))
@@ -40,16 +45,21 @@ class BankingServer:
             # Remove process from the top of my queue
             queue.extract_top()
 
-            comm_factory.broadcast("BLOCK" + "|" + object_to_txt(block))
+            lamport_clock()
+            comm_factory.broadcast("BLOCK" + "|" + object_to_txt(lamport_clock) + "#" + object_to_txt(block), lamport_clock, "BLOCK")
 
+            lamport_clock()
             # send release to all
-            comm_factory.broadcast("RELEASE")
+            comm_factory.broadcast("RELEASE" + "|" + object_to_txt(lamport_clock), lamport_clock, "RELEASE")
+
+            if len(comm_factory.CLIENTS) < 2:
+                raise Exception("Disconnected from client")
 
             print(f"Balance after transaction: {self.balance_request(lamport_clock.proc_id, balance_table)}")
 
         except Exception as e:
             print(e)
-            comm_factory.broadcast("RELEASE")
+            comm_factory.broadcast("RELEASE" + "|" + object_to_txt(lamport_clock), lamport_clock, "RELEASE")
             raise Abort(e)
 
         

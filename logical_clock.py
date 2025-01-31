@@ -15,3 +15,9 @@ class LamportClock:
 
     def __repr__(self):
         return f"Lamport-TimeStamp({self.logical_time}, {self.proc_id})"
+    
+    def update_clock(self, logical_time: int):
+        self.logical_time = max(logical_time, self.logical_time) + 1
+        print(f"Clock Value {self.logical_time - 1} -> {self.logical_time}")
+
+        

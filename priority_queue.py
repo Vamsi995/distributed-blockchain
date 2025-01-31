@@ -20,8 +20,11 @@ class PriorityQueue(Generic[T]):
         self.data.append(node)
         self.sift_up(len(self.data) - 1)
 
-    def delete(self):
-        pass
+    def delete(self, proc_id: int):
+        
+        self.data = list(filter(lambda clock: clock.proc_id != proc_id, self.data))
+        self.sift_down(0)
+        
 
     def peek_top(self):
         

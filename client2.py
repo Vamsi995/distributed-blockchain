@@ -7,6 +7,8 @@ from blockchain import BlockChain
 from balance_table import BalanceTable
 from banking_server import BankingServer
 from communication_factory import CommunicationFactory
+from interface import client_interface
+import logging
 
 def run_server(args):
     host = 'localhost'  # Listen on the local machine only
@@ -20,16 +22,13 @@ def run_server(args):
     limit = 2
 
 
-    # clients = []
-    # replies = []
-
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect((host, 8001))
     comm_factory.CLIENTS.append(clientsocket)
-    # clients.append(clientsocket)
+
     print("Connected with {}".format(clientsocket.getpeername()))
 
-    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket, pqueue, block_chain, balance_table, comm_factory))
+    thread = threading.Thread(target=comm_factory.handle, args=(clientsocket, pqueue, block_chain, balance_table, comm_factory, lamport_clock))
     thread.start()
     
 
@@ -39,31 +38,16 @@ def run_server(args):
     server.listen()
     print("Listening on port: {}".format(port))
 
-    comm_factory.receive(server, pqueue, block_chain, balance_table, limit)
+    comm_factory.receive(server, pqueue, block_chain, balance_table, limit, lamport_clock)
 
-    while True:
-        comm_factory.REPLIES.clear()
-
-        s = input("Transaction or Balance:\n")
-
-        if s == "t":
-            receiver = input("Transaction Receiver:\n")
-            amount = input("Transaction Amount:\n")
-            lamport_clock()
-            banking_server.transcation(lamport_clock, pqueue, balance_table, block_chain, receiver, float(amount), replies, clients)
-        elif s == "b":
-            balance = banking_server.balance_request(args.client, balance_table)
-            print("Current Balance is: {}".format(balance))
-        elif s == "bl":
-            print("Current Block Chain Information is: ")
-            print(block_chain)
-        else:
-            continue
-
-
+    client_interface(args, comm_factory, banking_server, lamport_clock, pqueue, balance_table, block_chain)
+    
 
     
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-port', type=int, default=8000)
     parser.add_argument('-client', type=int, default=None)

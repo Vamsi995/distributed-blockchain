@@ -14,7 +14,7 @@ class BalanceTable:
         self.balance_table[index] = value 
 
     def __repr__(self):
-        return f"""
+        return f"""Balance Table
                 Client 1: ${self.balance_table[1]},
                 Client 2: ${self.balance_table[2]},
                 Client 3: ${self.balance_table[3]}

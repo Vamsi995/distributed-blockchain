@@ -16,7 +16,7 @@ def run_server(args):
     port = args.port  # Choose a port number
     lamport_clock = LamportClock(args.client)
     block_chain = BlockChain()
-    balance_table = BalanceTable()
+    balance_table = BalanceTable(args.balance)
     pqueue = PriorityQueue([])
     banking_server = BankingServer()
     comm_factory = CommunicationFactory()
@@ -38,5 +38,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-port', type=int, default=8000)
     parser.add_argument('-client', type=int, default=None)
+    parser.add_argument('-balance', type=float, default=10.0)
     args = parser.parse_args()
     run_server(args)

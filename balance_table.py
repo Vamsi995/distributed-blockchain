@@ -1,10 +1,10 @@
 class BalanceTable:
 
-    def __init__(self):
+    def __init__(self, default_balance: float):
         self.balance_table: dict[int: float] = {
-            1: 10.0,
-            2: 10.0,
-            3: 10.0
+            1: default_balance,
+            2: default_balance,
+            3: default_balance
         } 
     
     def __getitem__(self, index: int):

@@ -84,6 +84,9 @@ Each client maintains:
 5. **All clients update their local copies of the blockchain and balance tables**.
 6. The system logs messages, timestamps, and transaction details.
 
+![IMG_9DCBD9E8678D-1](https://github.com/user-attachments/assets/4d963947-4350-49d6-a1b4-09b7b73b29d2)
+
+
 ## Notes
 - Transactions are **totally ordered** using **Lamport timestamps**.
 - The project can run on multiple machines or simulate distribution using multiple processes.

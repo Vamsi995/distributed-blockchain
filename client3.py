@@ -38,16 +38,10 @@ def run_server(args):
     thread = threading.Thread(target=comm_factory.handle, args=(clientsocket2, pqueue, block_chain, balance_table, comm_factory, lamport_clock, client_interface))
     thread.start()
 
-
     client_interface.start()
-   
-
-
     
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
-
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-port', type=int, default=8000)
     parser.add_argument('-client', type=int, default=None)
